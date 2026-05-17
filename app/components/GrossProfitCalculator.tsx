@@ -122,7 +122,7 @@ function drawChart(
   });
 }
 
-// ── 数値入力 ──────────────────────────────────────────────
+// ── 数値入力（時間など） ──────────────────────────────────
 function NumInput({ value, step = '1', onChange }: {
   value: string; step?: string; onChange: (v: string) => void;
 }) {
@@ -133,6 +133,27 @@ function NumInput({ value, step = '1', onChange }: {
       className="w-full h-9 border border-gray-200 rounded-lg px-2 text-right text-sm
                  bg-white outline-none transition
                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+    />
+  );
+}
+
+// ── 金額入力（カンマ自動挿入） ────────────────────────────
+function MoneyInput({ value, onChange, placeholder, className }: {
+  value: string; onChange: (v: string) => void;
+  placeholder?: string; className?: string;
+}) {
+  const display = value !== '' ? Number(value).toLocaleString('ja-JP') : '';
+  return (
+    <input
+      type="text" inputMode="numeric"
+      value={display} placeholder={placeholder ?? '0'}
+      onChange={e => {
+        const raw = e.target.value.replace(/[^0-9]/g, '');
+        onChange(raw);
+      }}
+      className={className ?? `w-full h-9 border border-gray-200 rounded-lg px-2 text-right text-sm
+                 bg-white outline-none transition
+                 focus:border-blue-400 focus:ring-2 focus:ring-blue-100`}
     />
   );
 }
@@ -294,17 +315,24 @@ export default function GrossProfitCalculator() {
           <SectionTitle>目標設定・達成度</SectionTitle>
           <div className="flex flex-col gap-4">
             {([
-              { label: '目標粗利額', val: goalProfit, set: setGoalProfit, unit: '円', ph: '例：3,000,000' },
-              { label: '目標粗利率', val: goalRate,   set: setGoalRate,   unit: '%', ph: '例：92' },
-            ] as const).map(({ label, val, set, unit, ph }) => (
+              { label: '目標粗利額', val: goalProfit, set: setGoalProfit, unit: '円', ph: '例：3,000,000', money: true },
+              { label: '目標粗利率', val: goalRate,   set: setGoalRate,   unit: '%', ph: '例：92',        money: false },
+            ] as const).map(({ label, val, set, unit, ph, money }) => (
               <div key={label}>
                 <label className="text-sm font-medium text-gray-500 block mb-1.5">{label}</label>
                 <div className="flex items-center gap-2">
-                  <input type="number" value={val} placeholder={ph}
-                    onKeyDown={blockInvalid} onChange={e => set(e.target.value)}
-                    className="flex-1 h-10 border border-gray-200 rounded-lg px-3 text-sm text-right
-                               text-gray-700 bg-white outline-none
-                               focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  {money ? (
+                    <MoneyInput value={val} onChange={set} placeholder={ph}
+                      className="flex-1 h-10 border border-gray-200 rounded-lg px-3 text-sm text-right
+                                 text-gray-700 bg-white outline-none
+                                 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  ) : (
+                    <input type="number" value={val} placeholder={ph}
+                      onKeyDown={blockInvalid} onChange={e => set(e.target.value)}
+                      className="flex-1 h-10 border border-gray-200 rounded-lg px-3 text-sm text-right
+                                 text-gray-700 bg-white outline-none
+                                 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+                  )}
                   <span className="text-sm text-gray-400 w-5">{unit}</span>
                 </div>
               </div>
@@ -358,8 +386,7 @@ export default function GrossProfitCalculator() {
                       flex items-center gap-6 flex-wrap">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-600 whitespace-nowrap">時間外手当単価</label>
-          <input type="number" value={overtimeRate} placeholder="例：2500"
-            onKeyDown={blockInvalid} onChange={e => setOvertimeRate(e.target.value)}
+          <MoneyInput value={overtimeRate} onChange={setOvertimeRate} placeholder="例：2,500"
             className="w-36 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
                        text-gray-700 bg-white outline-none
                        focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
@@ -430,7 +457,7 @@ export default function GrossProfitCalculator() {
                       {r.m}月
                     </td>
                     <td className={bTd}>
-                      <NumInput value={data[r.m]?.revenue ?? ''} onChange={v => update(r.m, 'revenue', v)} />
+                      <MoneyInput value={data[r.m]?.revenue ?? ''} onChange={v => update(r.m, 'revenue', v)} />
                     </td>
                     <td className={bTd}>
                       <NumInput value={data[r.m]?.ext ?? ''} step=".5" onChange={v => update(r.m, 'ext', v)} />
@@ -447,10 +474,10 @@ export default function GrossProfitCalculator() {
                     <td className={`${bTd} font-semibold text-amber-700`}>{fmt(r.otT, 1)} h</td>
                     <td className={`${bTd} font-semibold text-rose-600`}>{fmt(r.otP)} 円</td>
                     <td className={bTd}>
-                      <NumInput value={data[r.m]?.labor ?? ''} onChange={v => update(r.m, 'labor', v)} />
+                      <MoneyInput value={data[r.m]?.labor ?? ''} onChange={v => update(r.m, 'labor', v)} />
                     </td>
                     <td className={bTd}>
-                      <NumInput value={data[r.m]?.ins ?? ''} onChange={v => update(r.m, 'ins', v)} />
+                      <MoneyInput value={data[r.m]?.ins ?? ''} onChange={v => update(r.m, 'ins', v)} />
                     </td>
                     <td className={`${bTd} font-semibold text-rose-600`}>{fmt(r.cost)} 円</td>
                     <td className={`${bTd} font-semibold ${r.prof >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
