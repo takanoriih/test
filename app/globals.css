@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 html { scroll-behavior: smooth; }
+body { font-family: 'Meiryo UI', 'Meiryo', 'Yu Gothic UI', sans-serif; }
 
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
