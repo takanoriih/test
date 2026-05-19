@@ -369,7 +369,7 @@ export default function GrossProfitCalculator() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1200px' }}>
             <colgroup>
-              {[50, 132, 105, 85, 80, 75, 75, 90, 95, 110, 120, 95, 100, 82]
+              {[50, 132, 105, 85, 80, 80, 80, 80, 95, 110, 120, 95, 100, 82]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
