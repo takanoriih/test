@@ -439,7 +439,7 @@ export default function GrossProfitCalculator() {
             className="w-36 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
                        text-gray-700 bg-white outline-none
                        focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-          <span className="text-sm text-gray-400">円 / h</span>
+          <span className="text-sm text-gray-400 whitespace-nowrap">円 / h</span>
         </div>
         {savedAt && (
           <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400">
