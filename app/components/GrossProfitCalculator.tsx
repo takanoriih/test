@@ -112,7 +112,7 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
   return (
     <input
       type="text" value={value} placeholder="0:00"
-      onChange={e => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value.replace(/[^0-9:]/g, ''))}
       className="w-full h-9 border border-gray-200 rounded-lg px-1 text-right text-xs
                  bg-white outline-none transition
                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -431,8 +431,8 @@ export default function GrossProfitCalculator() {
                       )}
                     </td>
                     {/* 売上高（派遣=自動計算, 請負=入力値） */}
-                    <td className={`${bTd} font-semibold text-blue-700`}>
-                      {r.rev > 0 ? fmt(r.rev) + ' 円' : '—'}
+                    <td className={`${bTd} font-semibold text-blue-700 whitespace-nowrap`}>
+                      {r.rev > 0 ? fmt(r.rev) : '—'}
                     </td>
                     {/* 時間列 */}
                     <td className={bTd}>
@@ -450,8 +450,8 @@ export default function GrossProfitCalculator() {
                     <td className={`${bTd} font-semibold text-amber-700`}>
                       {r.otT > 0 ? fmt(r.otT, 2) + ' h' : '—'}
                     </td>
-                    <td className={`${bTd} font-semibold text-rose-600`}>
-                      {r.otP > 0 ? fmt(r.otP) + ' 円' : '—'}
+                    <td className={`${bTd} font-semibold text-rose-600 whitespace-nowrap`}>
+                      {r.otP > 0 ? fmt(r.otP) : '—'}
                     </td>
                     <td className={bTd}>
                       <MoneyInput value={d.labor ?? ''} onChange={v => update(r.m, 'labor', v)} />
@@ -459,11 +459,11 @@ export default function GrossProfitCalculator() {
                     <td className={bTd}>
                       <MoneyInput value={d.ins ?? ''} onChange={v => update(r.m, 'ins', v)} />
                     </td>
-                    <td className={`${bTd} font-semibold text-rose-600`}>
-                      {r.cost > 0 ? fmt(r.cost) + ' 円' : '—'}
+                    <td className={`${bTd} font-semibold text-rose-600 whitespace-nowrap`}>
+                      {r.cost > 0 ? fmt(r.cost) : '—'}
                     </td>
-                    <td className={`${bTd} font-semibold ${r.prof >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {(r.rev > 0 || r.cost > 0) ? fmt(r.prof) + ' 円' : '—'}
+                    <td className={`${bTd} font-semibold whitespace-nowrap ${r.prof >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {(r.rev > 0 || r.cost > 0) ? fmt(r.prof) : '—'}
                     </td>
                     <td className={`${bTd} font-bold text-base ${r.rPct !== null ? 'text-emerald-600' : 'text-gray-400'}`}>
                       {r.rPct !== null ? r.rPct.toFixed(1) + '%' : '—'}
