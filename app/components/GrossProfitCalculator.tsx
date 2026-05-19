@@ -43,7 +43,7 @@ function drawChart(
   const ctx = canvas.getContext('2d')!;
   ctx.scale(dpr, dpr);
 
-  const ml = 50, mr = 20, mt = 20, mb = 32;
+  const ml = 50, mr = 38, mt = 20, mb = 32;
   const iW = W - ml - mr, iH = H - mt - mb;
   const n = months.length;
   const yMax = 120; // 常に120%まで表示
@@ -72,11 +72,11 @@ function drawChart(
     ctx.fillText(g + '%', ml - 6, y);
   });
 
-  // 目標ラベル（右端）
+  // 目標ラベル（チャート内右寄せ、100%線の上）
   if (goalProfit > 0) {
     ctx.fillStyle = '#6366f1'; ctx.font = 'bold 11px system-ui';
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('目標', ml + iW + 4, toY(100));
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText('目標', ml + iW, toY(100) - 3);
   }
 
   // 棒グラフ＋ラベル
@@ -107,12 +107,12 @@ function drawChart(
     ctx.lineWidth = 1.5;
     ctx.strokeRect(x - barW / 2, y, barW, barH);
 
-    // 達成率ラベル
+    // 達成率ラベル（バー上端より2px上、キャンバス上端を超えないよう14px下限）
     ctx.fillStyle = isOver ? '#059669' : '#d97706';
     ctx.font = 'bold 11px system-ui';
     ctx.textAlign = 'center';
-    const labelY = y < mt + 18 ? y + barH + 2 : y - 3;
-    ctx.textBaseline = y < mt + 18 ? 'top' : 'bottom';
+    ctx.textBaseline = 'bottom';
+    const labelY = Math.max(y - 2, 14);
     ctx.fillText(rate.toFixed(1) + '%', x, labelY);
   });
 }
@@ -316,7 +316,13 @@ export default function GrossProfitCalculator() {
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-500">年度</label>
             <input type="number" value={year} onKeyDown={blockInvalid}
+              min={1996} max={2050}
               onChange={e => setYear(e.target.value)}
+              onBlur={e => {
+                const n = Number(e.target.value);
+                if (!e.target.value || n < 1996) setYear('1996');
+                else if (n > 2050) setYear('2050');
+              }}
               className="w-20 h-9 border border-gray-200 rounded-lg px-3 text-sm text-gray-700
                          bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
           </div>
