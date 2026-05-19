@@ -277,7 +277,7 @@ export default function GrossProfitCalculator() {
   const { rows, sRev, sExt, avgExt, sOt, sHol, sNight, sOtT, sOtP, sLab, sIns, sCost, sPf, tRate, any } = calc;
 
   const gTh = 'text-white text-xs font-bold tracking-wide uppercase py-2.5 text-center';
-  const cTh = 'text-xs font-semibold text-right py-2.5 px-2 border-b-2 border-gray-200 whitespace-nowrap';
+  const cTh = 'text-xs font-semibold text-center py-2.5 px-2 border-b-2 border-gray-200 whitespace-nowrap';
   const bTd = 'text-right text-sm px-2 py-2 border-b border-gray-100 align-middle';
   const fTd = 'text-right text-xs font-bold px-2 py-2 bg-emerald-50 border-t-2 border-emerald-400';
 
