@@ -253,7 +253,7 @@ export default function GrossProfitCalculator() {
   const gTh = 'text-white text-xs font-bold tracking-wide uppercase py-2.5 text-center';
   const cTh = 'text-xs font-semibold text-right py-2.5 px-2 border-b-2 border-gray-200 whitespace-nowrap';
   const bTd = 'text-right text-sm px-2 py-2 border-b border-gray-100 align-middle';
-  const fTd = 'text-right text-sm font-bold px-2 py-3 bg-emerald-50 border-t-2 border-emerald-400 whitespace-nowrap';
+  const fTd = 'text-right text-xs font-bold px-2 py-3 bg-emerald-50 border-t-2 border-emerald-400 whitespace-nowrap overflow-hidden';
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-6">
@@ -489,7 +489,7 @@ export default function GrossProfitCalculator() {
                 <td className={fTd}>{any ? fmt(sLab) + ' 円' : '—'}</td>
                 <td className={fTd}>{any ? fmt(sIns) + ' 円' : '—'}</td>
                 <td className={`${fTd} text-rose-600`}>{any ? fmt(sCost) + ' 円' : '—'}</td>
-                <td className={`${fTd} text-lg ${sPf >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <td className={`${fTd} text-sm ${sPf >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {any ? fmt(sPf) + ' 円' : '—'}
                 </td>
                 <td className={`${fTd} text-lg ${tRate !== null ? (tRate >= 0 ? 'text-emerald-600' : 'text-rose-600') : ''}`}>
