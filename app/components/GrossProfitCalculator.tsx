@@ -130,16 +130,19 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
-// ── 金額入力（カンマ自動挿入） ────────────────────────────
+// ── 金額入力（フォーカス中は生数値・離れたらカンマ整形） ──
 function MoneyInput({ value, onChange, placeholder, className }: {
   value: string; onChange: (v: string) => void;
   placeholder?: string; className?: string;
 }) {
-  const display = value !== '' ? Number(value).toLocaleString('ja-JP') : '';
+  const [focused, setFocused] = useState(false);
+  const display = focused ? value : (value !== '' ? Number(value).toLocaleString('ja-JP') : '');
   return (
     <input
       type="text" inputMode="numeric"
       value={display} placeholder={placeholder ?? '0'}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       onChange={e => {
         const raw = e.target.value.replace(/[^0-9]/g, '');
         onChange(raw);
@@ -391,7 +394,7 @@ export default function GrossProfitCalculator() {
 
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
-          <SectionTitle>月次粗利 目標 vs 実績</SectionTitle>
+          <SectionTitle>月次粗利 目標対比</SectionTitle>
           <div className="relative flex-1 min-h-[180px]">
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           </div>
