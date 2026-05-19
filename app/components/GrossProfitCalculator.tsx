@@ -113,7 +113,7 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
     <input
       type="text" value={value} placeholder="0:00"
       onChange={e => onChange(e.target.value)}
-      className="w-full h-9 border border-gray-200 rounded-lg px-2 text-right text-sm
+      className="w-full h-9 border border-gray-200 rounded-lg px-1 text-right text-sm
                  bg-white outline-none transition
                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
     />
