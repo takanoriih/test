@@ -311,7 +311,7 @@ export default function GrossProfitCalculator() {
       <style>{`
         @media print {
           @page { size: A4 landscape; margin: 5mm; }
-          html { zoom: 72%; }
+          html { zoom: 80%; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
@@ -448,7 +448,7 @@ export default function GrossProfitCalculator() {
       </div>
 
       {/* ── メインテーブル ── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden print:break-before-page">
         <div className="px-6 pt-5 pb-3 flex items-center gap-4 flex-wrap">
           <SectionTitle>月別入力</SectionTitle>
           <p className="text-xs text-gray-400 mb-4">
