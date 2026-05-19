@@ -472,18 +472,18 @@ export default function GrossProfitCalculator() {
                 <th colSpan={2} className={`${gTh} bg-emerald-600`}>粗利</th>
               </tr>
               <tr>
-                <th className={`${cTh} bg-blue-50 text-blue-700`}>単価 / 月額（円）</th>
-                <th className={`${cTh} bg-blue-50 text-blue-700`}>売上高（円）</th>
+                <th className={`${cTh} bg-blue-50 text-blue-700`}>単価 / 月額</th>
+                <th className={`${cTh} bg-blue-50 text-blue-700`}>売上高</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>社外合計</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>定時外</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>休日</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>深夜</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>残業時間計</th>
-                <th className={`${cTh} bg-rose-50 text-rose-700`}>残業額（円）</th>
-                <th className={`${cTh} bg-rose-50 text-rose-700`}>人件費（円）</th>
-                <th className={`${cTh} bg-rose-50 text-rose-700`}>社会保険等（円）</th>
-                <th className={`${cTh} bg-rose-50 text-rose-700`}>コスト計（円）</th>
-                <th className={`${cTh} bg-emerald-50 text-emerald-700`}>粗利額（円）</th>
+                <th className={`${cTh} bg-rose-50 text-rose-700`}>残業額</th>
+                <th className={`${cTh} bg-rose-50 text-rose-700`}>人件費</th>
+                <th className={`${cTh} bg-rose-50 text-rose-700`}>社会保険等</th>
+                <th className={`${cTh} bg-rose-50 text-rose-700`}>コスト計</th>
+                <th className={`${cTh} bg-emerald-50 text-emerald-700`}>粗利額</th>
                 <th className={`${cTh} bg-emerald-50 text-emerald-700`}>粗利率</th>
               </tr>
             </thead>
