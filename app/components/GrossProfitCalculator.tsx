@@ -8,7 +8,7 @@ type ColKey = 'revenue' | 'unitRate' | 'ext' | 'ot' | 'hol' | 'night' | 'labor' 
 type MD = Record<ColKey, string> & { ctype: ContractType };
 
 const emptyMD = (): MD => ({
-  ctype: 'haken', revenue: '', unitRate: '', ext: '', ot: '', hol: '', night: '', labor: '', ins: '',
+  ctype: 'ukeoi', revenue: '', unitRate: '', ext: '', ot: '', hol: '', night: '', labor: '', ins: '',
 });
 
 const pf = (s?: string) => parseFloat(s ?? '') || 0;
@@ -369,7 +369,7 @@ export default function GrossProfitCalculator() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1070px' }}>
             <colgroup>
-              {[46, 112, 92, 78, 76, 76, 76, 76, 84, 92, 98, 96, 84, 84]
+              {[46, 112, 92, 78, 76, 76, 76, 76, 66, 72, 98, 96, 84, 84]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
@@ -477,22 +477,22 @@ export default function GrossProfitCalculator() {
                 <td colSpan={2} className="text-center text-sm font-bold py-3 bg-emerald-50 border-t-2 border-emerald-400
                                text-gray-700 border-r-2 border-r-emerald-200 align-middle">合計</td>
                 <td className={fTd}>—</td>
-                <td className={fTd}>{any ? fmt(sRev) + ' 円' : '—'}</td>
+                <td className={fTd}>{any ? fmt(sRev) : '—'}</td>
                 <td className={fTd}>
-                  {any ? <><span className="text-xs font-normal text-gray-400">平均 </span>{fmt(avgExt, 2) + ' h'}</> : '—'}
+                  {any ? <><span className="font-normal text-gray-400">均 </span>{fmt(avgExt, 2) + 'h'}</> : '—'}
                 </td>
-                <td className={fTd}>{any ? fmt(sOt, 2) + ' h' : '—'}</td>
-                <td className={fTd}>{any ? fmt(sHol, 2) + ' h' : '—'}</td>
-                <td className={fTd}>{any ? fmt(sNight, 2) + ' h' : '—'}</td>
-                <td className={`${fTd} text-amber-700`}>{any ? fmt(sOtT, 2) + ' h' : '—'}</td>
-                <td className={`${fTd} text-rose-600`}>{any ? fmt(sOtP) + ' 円' : '—'}</td>
-                <td className={fTd}>{any ? fmt(sLab) + ' 円' : '—'}</td>
-                <td className={fTd}>{any ? fmt(sIns) + ' 円' : '—'}</td>
-                <td className={`${fTd} text-rose-600`}>{any ? fmt(sCost) + ' 円' : '—'}</td>
+                <td className={fTd}>{any ? fmt(sOt, 2) + 'h' : '—'}</td>
+                <td className={fTd}>{any ? fmt(sHol, 2) + 'h' : '—'}</td>
+                <td className={fTd}>{any ? fmt(sNight, 2) + 'h' : '—'}</td>
+                <td className={`${fTd} text-amber-700`}>{any ? fmt(sOtT, 2) + 'h' : '—'}</td>
+                <td className={`${fTd} text-rose-600`}>{any ? fmt(sOtP) : '—'}</td>
+                <td className={fTd}>{any ? fmt(sLab) : '—'}</td>
+                <td className={fTd}>{any ? fmt(sIns) : '—'}</td>
+                <td className={`${fTd} text-rose-600`}>{any ? fmt(sCost) : '—'}</td>
                 <td className={`${fTd} text-sm ${sPf >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {any ? fmt(sPf) + ' 円' : '—'}
+                  {any ? fmt(sPf) : '—'}
                 </td>
-                <td className={`${fTd} text-lg ${tRate !== null ? (tRate >= 0 ? 'text-emerald-600' : 'text-rose-600') : ''}`}>
+                <td className={`${fTd} text-sm ${tRate !== null ? (tRate >= 0 ? 'text-emerald-600' : 'text-rose-600') : ''}`}>
                   {any && tRate !== null ? tRate.toFixed(1) + '%' : '—'}
                 </td>
               </tr>
