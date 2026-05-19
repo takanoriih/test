@@ -29,11 +29,12 @@ function blockInvalid(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === '-' && (e.target as HTMLInputElement).value.includes('-')) e.preventDefault();
 }
 
-// ── Canvas グラフ描画 ─────────────────────────────────────
+// ── Canvas グラフ描画（目標 vs 実績） ─────────────────────
 function drawChart(
   canvas: HTMLCanvasElement,
   months: number[],
-  rates: (number | null)[],
+  profits: (number | null)[],  // 月別実績粗利額
+  goalProfit: number,           // 半期目標粗利額
 ) {
   const dpr = window.devicePixelRatio || 1;
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
@@ -42,68 +43,77 @@ function drawChart(
   const ctx = canvas.getContext('2d')!;
   ctx.scale(dpr, dpr);
 
-  const ml = 44, mr = 16, mt = 16, mb = 28;
+  const ml = 50, mr = 20, mt = 20, mb = 32;
   const iW = W - ml - mr, iH = H - mt - mb;
   const n = months.length;
+  const yMax = 120; // 常に120%まで表示
+  const toY = (v: number) => mt + iH - Math.min(v / yMax, 1) * iH;
+  const toX = (i: number) => ml + (i + 0.5) * (iW / n);
+  const barW = Math.max(Math.min(iW / n * 0.55, 48), 20);
+  const monthlyTarget = goalProfit > 0 ? goalProfit / n : 0;
 
-  const valid = rates.filter((r): r is number => r !== null);
-  const maxVal = Math.max(100, ...valid);
-  const yMax = Math.ceil(maxVal / 10) * 10;
-  const toY = (r: number) => mt + iH - (r / yMax * iH);
-  const toX = (i: number) => ml + (n === 1 ? iW / 2 : (i / (n - 1)) * iW);
-
-  // 背景グラデーション
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#ffffff');
-  grad.addColorStop(1, '#f8faff');
-  ctx.fillStyle = grad;
+  // 背景
+  ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, W, H);
 
   // グリッド線
-  [0, 25, 50, 75, 100].forEach(g => {
-    if (g > yMax) return;
+  [0, 25, 50, 75, 100, 120].forEach(g => {
     const y = toY(g);
+    const is100 = g === 100;
     ctx.beginPath();
-    ctx.strokeStyle = '#e5e7eb';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([]);
+    ctx.strokeStyle = is100 ? '#6366f1' : '#e5e7eb';
+    ctx.lineWidth = is100 ? 1.5 : 1;
+    ctx.setLineDash(is100 ? [6, 4] : []);
     ctx.moveTo(ml, y); ctx.lineTo(ml + iW, y);
-    ctx.stroke();
-    ctx.fillStyle = '#9ca3af';
-    ctx.font = '11px system-ui';
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = is100 ? '#6366f1' : '#9ca3af';
+    ctx.font = `${is100 ? 'bold ' : ''}11px system-ui`;
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     ctx.fillText(g + '%', ml - 6, y);
   });
 
-  // 折れ線
-  ctx.shadowColor = 'rgba(16,185,129,0.3)';
-  ctx.shadowBlur = 6;
-  ctx.beginPath(); ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
-  let started = false;
-  rates.forEach((r, i) => {
-    if (r === null) { started = false; return; }
-    const x = toX(i), y = toY(r);
-    if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.shadowBlur = 0;
+  // 目標ラベル（右端）
+  if (goalProfit > 0) {
+    ctx.fillStyle = '#6366f1'; ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('目標', ml + iW + 4, toY(100));
+  }
 
-  // ドット＋ラベル
+  // 棒グラフ＋ラベル
   months.forEach((m, i) => {
-    const r = rates[i]; const x = toX(i);
+    const p = profits[i];
+    const x = toX(i);
+
+    // 月ラベル
     ctx.fillStyle = '#9ca3af'; ctx.font = '11px system-ui';
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.fillText(m + '月', x, mt + iH + 6);
-    if (r !== null) {
-      const y = toY(r);
-      ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#10b981'; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.fillStyle = '#059669';
-      ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
-      ctx.textBaseline = y < mt + 24 ? 'top' : 'bottom';
-      ctx.fillText(r.toFixed(1) + '%', x, y + (y < mt + 24 ? 10 : -10));
-    }
+
+    if (p === null || monthlyTarget === 0) return;
+
+    const rate = p / monthlyTarget * 100;
+    const clampedRate = Math.min(rate, yMax);
+    const barH = clampedRate / yMax * iH;
+    const y = mt + iH - barH;
+
+    const isOver = rate >= 100;
+    const barColor = isOver ? '#10b981' : '#f59e0b';
+    const barAlpha = isOver ? '33' : '44';
+
+    // バー
+    ctx.fillStyle = barColor + barAlpha;
+    ctx.fillRect(x - barW / 2, y, barW, barH);
+    ctx.strokeStyle = barColor;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - barW / 2, y, barW, barH);
+
+    // 達成率ラベル
+    ctx.fillStyle = isOver ? '#059669' : '#d97706';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'center';
+    const labelY = y < mt + 18 ? y + barH + 2 : y - 3;
+    ctx.textBaseline = y < mt + 18 ? 'top' : 'bottom';
+    ctx.fillText(rate.toFixed(1) + '%', x, labelY);
   });
 }
 
@@ -241,13 +251,13 @@ export default function GrossProfitCalculator() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rates = calc.rows.map(r => r.rPct);
-    const draw = () => drawChart(canvas, months, rates);
+    const profits = calc.rows.map(r => (r.rev > 0 || r.cost > 0) ? r.prof : null);
+    const draw = () => drawChart(canvas, months, profits, gp);
     draw();
     const ro = new ResizeObserver(draw);
     ro.observe(canvas);
     return () => ro.disconnect();
-  }, [calc, months]);
+  }, [calc, months, gp]);
 
   const update = useCallback((m: number, col: string, val: string) => {
     setData(prev => ({ ...prev, [m]: { ...(prev[m] ?? emptyMD()), [col]: val } }));
@@ -381,7 +391,7 @@ export default function GrossProfitCalculator() {
 
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
-          <SectionTitle>月次粗利率推移</SectionTitle>
+          <SectionTitle>月次粗利 目標 vs 実績</SectionTitle>
           <div className="relative flex-1 min-h-[180px]">
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           </div>
