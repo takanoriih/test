@@ -430,7 +430,7 @@ export default function GrossProfitCalculator() {
         <div className="px-6 pt-5 pb-3 flex items-center gap-4 flex-wrap">
           <SectionTitle>月別入力</SectionTitle>
           <p className="text-xs text-gray-400 mb-4">
-            ※ 時間入力は <code className="bg-gray-100 px-1 rounded">166:30</code> 形式（時間:分）または小数で入力できます
+            ※ 時間入力は <code className="bg-gray-100 px-1 rounded">hhh:mm</code> 形式（時間:分）または小数で入力できます
           </p>
         </div>
         <div className="overflow-x-auto">
