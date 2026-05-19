@@ -382,7 +382,7 @@ export default function GrossProfitCalculator() {
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <SectionTitle>月次粗利率推移</SectionTitle>
-          <div className="relative" style={{ height: '200px' }}>
+          <div className="relative mx-auto" style={{ height: '200px', maxWidth: '640px' }}>
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           </div>
         </div>
