@@ -253,7 +253,7 @@ export default function GrossProfitCalculator() {
   const gTh = 'text-white text-xs font-bold tracking-wide uppercase py-2.5 text-center';
   const cTh = 'text-xs font-semibold text-right py-2.5 px-2 border-b-2 border-gray-200 whitespace-nowrap';
   const bTd = 'text-right text-sm px-2 py-2 border-b border-gray-100 align-middle';
-  const fTd = 'text-right text-xs font-bold px-2 py-3 bg-emerald-50 border-t-2 border-emerald-400 whitespace-nowrap overflow-hidden';
+  const fTd = 'text-right text-xs font-bold px-2 py-2 bg-emerald-50 border-t-2 border-emerald-400';
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-6">
@@ -367,9 +367,9 @@ export default function GrossProfitCalculator() {
           <SectionTitle>月別入力</SectionTitle>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1200px' }}>
+          <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1070px' }}>
             <colgroup>
-              {[50, 132, 105, 85, 80, 80, 80, 80, 95, 110, 120, 95, 100, 82]
+              {[46, 112, 92, 78, 76, 76, 76, 76, 84, 92, 98, 96, 84, 84]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
