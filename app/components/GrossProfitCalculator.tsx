@@ -152,7 +152,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 // ── メインコンポーネント ──────────────────────────────────
-const STORAGE_KEY = 'gross-profit-calc-v1';
+const GP_PREFIX = 'gp';
 
 export default function GrossProfitCalculator() {
   const [year,         setYear]         = useState('2026');
@@ -163,28 +163,36 @@ export default function GrossProfitCalculator() {
   const [savedAt,      setSavedAt]      = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // ── localStorage 読み込み（初回マウント時） ──
-  useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-      if (!s) return;
-      if (s.year)         setYear(s.year);
-      if (s.half)         setHalf(s.half);
-      if (s.overtimeRate !== undefined) setOvertimeRate(s.overtimeRate);
-      if (s.goalProfit  !== undefined) setGoalProfit(s.goalProfit);
-      if (s.data)         setData(s.data);
-      if (s.savedAt)      setSavedAt(s.savedAt);
-    } catch {}
-  }, []);
+  // ロード中のフラグ（ロード直後の保存をスキップするため）
+  const skipSaveRef = useRef(true);
+  const yearRef = useRef(year);
+  const halfRef = useRef(half);
+  yearRef.current = year;
+  halfRef.current = half;
 
-  // ── localStorage 自動保存 ──
+  // ── 年度・半期が変わるたびに対応データをロード ──
   useEffect(() => {
-    const at = new Date().toLocaleString('ja-JP');
+    skipSaveRef.current = true;
+    const key = `${GP_PREFIX}-${year}-${half}`;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ year, half, overtimeRate, goalProfit, data, savedAt: at }));
+      const s = JSON.parse(localStorage.getItem(key) ?? 'null');
+      setOvertimeRate(s?.overtimeRate ?? '');
+      setGoalProfit(s?.goalProfit ?? '');
+      setData(s?.data ?? {});
+      setSavedAt(s?.savedAt ?? null);
+    } catch { skipSaveRef.current = false; }
+  }, [year, half]);
+
+  // ── 入力変更時に自動保存（ロード直後はスキップ） ──
+  useEffect(() => {
+    if (skipSaveRef.current) { skipSaveRef.current = false; return; }
+    const at = new Date().toLocaleString('ja-JP');
+    const key = `${GP_PREFIX}-${yearRef.current}-${halfRef.current}`;
+    try {
+      localStorage.setItem(key, JSON.stringify({ overtimeRate, goalProfit, data, savedAt: at }));
       setSavedAt(at);
     } catch {}
-  }, [year, half, overtimeRate, goalProfit, data]);
+  }, [overtimeRate, goalProfit, data]);
 
   const months = useMemo(() =>
     half === '1' ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12], [half]);
