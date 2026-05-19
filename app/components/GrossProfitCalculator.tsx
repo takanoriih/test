@@ -315,6 +315,15 @@ export default function GrossProfitCalculator() {
               </div>
             </div>
 
+            {/* 粗利額合計 */}
+            <div className="pt-2 border-t border-gray-100">
+              <div className="text-xs text-gray-400 font-medium mb-1">粗利額合計</div>
+              <div className={`text-2xl font-black leading-none ${
+                !any ? 'text-gray-300' : sPf >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                {any ? fmt(sPf) + ' 円' : '—'}
+              </div>
+            </div>
+
             {/* 達成度 */}
             <div className="pt-2 border-t border-gray-100">
               <div className="bg-gray-50 rounded-xl p-4">
@@ -506,10 +515,10 @@ export default function GrossProfitCalculator() {
         {([
           { label: '売上高合計',   value: any ? fmt(sRev)    + ' 円' : '—', sub: '半期累計',       color: 'border-blue-400',    val: 'text-gray-800' },
           { label: 'コスト合計',   value: any ? fmt(sCost)   + ' 円' : '—', sub: '人件費+社保+残業', color: 'border-rose-400',    val: 'text-rose-600' },
-          { label: '粗利額合計',   value: any ? fmt(sPf)     + ' 円' : '—', sub: '半期累計',       color: 'border-emerald-500', val: any ? (sPf >= 0 ? 'text-emerald-600' : 'text-rose-600') : '' },
-          { label: '粗利率',       value: any && tRate !== null ? tRate.toFixed(1) + '%' : '—', sub: '半期平均', color: 'border-emerald-500', val: any && tRate !== null ? (tRate >= 0 ? 'text-emerald-600' : 'text-rose-600') : '' },
           { label: '残業時間合計', value: any ? fmt(sOtT, 2) + ' h'  : '—', sub: '定時外+休日+深夜', color: 'border-amber-400',  val: 'text-amber-700' },
           { label: '残業額合計',   value: any ? fmt(sOtP)    + ' 円' : '—', sub: '単価×残業時間',  color: 'border-rose-400',    val: 'text-rose-600' },
+          { label: '粗利額合計',   value: any ? fmt(sPf)     + ' 円' : '—', sub: '半期累計',       color: 'border-emerald-500', val: any ? (sPf >= 0 ? 'text-emerald-600' : 'text-rose-600') : '' },
+          { label: '粗利率',       value: any && tRate !== null ? tRate.toFixed(1) + '%' : '—', sub: '半期平均', color: 'border-emerald-500', val: any && tRate !== null ? (tRate >= 0 ? 'text-emerald-600' : 'text-rose-600') : '' },
         ] as const).map(({ label, value, sub, color, val }) => (
           <div key={label}
             className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-5 border-t-4 ${color}`}>
