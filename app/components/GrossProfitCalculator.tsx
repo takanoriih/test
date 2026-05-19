@@ -259,7 +259,9 @@ export default function GrossProfitCalculator() {
     draw();
     const ro = new ResizeObserver(draw);
     ro.observe(canvas);
-    return () => ro.disconnect();
+    // 印刷直前に強制再描画（canvasは印刷時にリセットされるため）
+    window.addEventListener('beforeprint', draw);
+    return () => { ro.disconnect(); window.removeEventListener('beforeprint', draw); };
   }, [calc, months, gp]);
 
   const update = useCallback((m: number, col: string, val: string) => {
