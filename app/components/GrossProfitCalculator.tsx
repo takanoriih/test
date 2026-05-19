@@ -49,7 +49,7 @@ function drawChart(
   const yMax = 120;
   const toY = (v: number) => mt + iH - Math.min(v / yMax, 1) * iH;
   const toX = (i: number) => ml + (i + 0.5) * (iW / n);
-  const barW = Math.max(Math.min(iW / n * 0.55, 48), 20);
+  const barW = Math.max(Math.min(iW / n * 0.35, 32), 14);
   const monthlyTarget = goalProfit > 0 ? goalProfit / n : 0;
 
   ctx.fillStyle = '#ffffff';
@@ -300,6 +300,7 @@ export default function GrossProfitCalculator() {
           @page { size: A4 landscape; margin: 5mm; }
           html { zoom: 80%; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .no-print { display: none !important; }
         }
       `}</style>
 
@@ -408,7 +409,7 @@ export default function GrossProfitCalculator() {
         </div>
 
         {/* グラフ（印刷時は非表示） */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col print:hidden">
+        <div className="no-print bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
           <SectionTitle>月次粗利 目標対比</SectionTitle>
           <div className="relative flex-1 min-h-[180px]">
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
