@@ -298,7 +298,7 @@ export default function GrossProfitCalculator() {
       <style>{`
         @media print {
           @page { size: A4 landscape; margin: 5mm; }
-          html { zoom: 80%; }
+          html { zoom: 75%; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .no-print { display: none !important; }
         }
@@ -361,7 +361,7 @@ export default function GrossProfitCalculator() {
       </div>
 
       {/* ── 目標設定 + グラフ ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5 mb-5 print:grid-cols-1">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5 mb-5 no-print">
 
         {/* 目標設定 */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -417,9 +417,21 @@ export default function GrossProfitCalculator() {
         </div>
       </div>
 
+      {/* 印刷専用：目標・達成度コンパクト表示 */}
+      <div className="hidden mb-3" style={{ display: 'none' }} id="print-goal-bar">
+        <style>{`
+          @media print { #print-goal-bar { display: flex !important; align-items: center; gap: 32px;
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 8px 20px; margin-bottom: 10px; } }
+        `}</style>
+        <span className="text-sm font-medium text-gray-500">目標粗利額：<strong className="text-gray-800">{gp > 0 ? fmt(gp) + ' 円' : '未設定'}</strong></span>
+        <span className="text-sm font-medium text-gray-500">粗利額合計：<strong className={any ? (sPf >= 0 ? 'text-emerald-600' : 'text-rose-500') : 'text-gray-300'}>{any ? fmt(sPf) + ' 円' : '—'}</strong></span>
+        <span className="text-sm font-medium text-gray-500">達成度：<strong className={profitPct === null ? 'text-gray-300' : profitPct >= 100 ? 'text-emerald-500' : 'text-rose-500'}>{profitPct !== null ? profitPct.toFixed(1) + '%' : '—'}</strong></span>
+        {profitPct !== null && <span className="text-sm font-medium text-gray-500">差額：<strong className={(sPf - gp) >= 0 ? 'text-emerald-600' : 'text-rose-500'}>{((sPf - gp) >= 0 ? '＋' : '−') + fmt(Math.round(Math.abs(sPf - gp))) + ' 円'}</strong></span>}
+      </div>
+
       {/* ── 設定バー ── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5
-                      flex items-center gap-6 flex-wrap print:hidden">
+                      flex items-center gap-6 flex-wrap no-print">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-600 whitespace-nowrap">時間外手当単価</label>
           <MoneyInput value={overtimeRate} onChange={setOvertimeRate} placeholder="例：2,500"
@@ -436,7 +448,7 @@ export default function GrossProfitCalculator() {
       </div>
 
       {/* ── メインテーブル ── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden print:break-before-page">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden">
         <div className="px-6 pt-5 pb-3 flex items-center gap-4 flex-wrap">
           <SectionTitle>月別入力</SectionTitle>
           <p className="text-xs text-gray-400 mb-4">
