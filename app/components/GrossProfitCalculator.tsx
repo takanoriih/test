@@ -302,12 +302,29 @@ export default function GrossProfitCalculator() {
   const bTd = 'text-right text-sm px-2 py-2 border-b border-gray-100 align-middle';
   const fTd = 'text-right text-xs font-bold px-2 py-2 bg-emerald-50 border-t-2 border-emerald-400';
 
+  const halfLabel = half === '1' ? '上期（4〜9月）' : '下期（10〜3月）';
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-6">
 
+      {/* 印刷用スタイル */}
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 10mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .max-w-\\[1400px\\] { max-width: 100% !important; padding: 0 !important; }
+        }
+      `}</style>
+
+      {/* 印刷時のみ表示するタイトル */}
+      <div className="hidden print:block mb-4">
+        <h1 className="text-xl font-bold text-gray-800">半期粗利計算ツール</h1>
+        <p className="text-sm text-gray-500">{year}年度 {halfLabel}</p>
+      </div>
+
       {/* ── ヘッダー ── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5
-                      flex items-center gap-4 flex-wrap">
+                      flex items-center gap-4 flex-wrap print:hidden">
         <div>
           <h1 className="text-xl font-bold text-gray-800">半期粗利計算ツール</h1>
           <p className="text-sm text-gray-400 mt-0.5">売上・コスト・残業を一括管理</p>
@@ -336,7 +353,7 @@ export default function GrossProfitCalculator() {
             </select>
           </div>
         </div>
-        <div className="ml-auto flex gap-3">
+        <div className="ml-auto flex gap-3 print:hidden">
           <button onClick={() => setData({})}
             className="h-9 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-500
                        hover:bg-gray-50 transition-colors">
@@ -346,6 +363,11 @@ export default function GrossProfitCalculator() {
             className="h-9 px-5 rounded-lg bg-blue-600 text-white text-sm font-semibold
                        hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
             ↓ CSVダウンロード
+          </button>
+          <button onClick={() => window.print()}
+            className="h-9 px-5 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-600
+                       hover:bg-gray-50 transition-colors">
+            🖨 印刷 / PDF
           </button>
         </div>
       </div>
@@ -409,7 +431,7 @@ export default function GrossProfitCalculator() {
 
       {/* ── 設定バー ── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5
-                      flex items-center gap-6 flex-wrap">
+                      flex items-center gap-6 flex-wrap print:hidden">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-600 whitespace-nowrap">時間外手当単価</label>
           <MoneyInput value={overtimeRate} onChange={setOvertimeRate} placeholder="例：2,500"
