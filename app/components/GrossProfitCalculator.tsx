@@ -48,7 +48,7 @@ function BarChart({ months, profits, goalProfit }: {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%"
-         preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
+         preserveAspectRatio="none" style={{ display: 'block' }}>
 
       {/* グリッド線 */}
       {[0, 25, 50, 75, 100, 120].map(g => {
@@ -416,7 +416,7 @@ export default function GrossProfitCalculator() {
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col">
           <SectionTitle>月次粗利 目標対比</SectionTitle>
-          <div className="h-[160px]">
+          <div className="flex-1 min-h-[180px]">
             <BarChart months={months} profits={profits} goalProfit={gp} />
           </div>
         </div>
