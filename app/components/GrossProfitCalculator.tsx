@@ -152,13 +152,39 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 // ── メインコンポーネント ──────────────────────────────────
+const STORAGE_KEY = 'gross-profit-calc-v1';
+
 export default function GrossProfitCalculator() {
   const [year,         setYear]         = useState('2026');
   const [half,         setHalf]         = useState<'1' | '2'>('1');
   const [overtimeRate, setOvertimeRate] = useState('');
   const [goalProfit,   setGoalProfit]   = useState('');
   const [data,         setData]         = useState<Record<number, MD>>({});
+  const [savedAt,      setSavedAt]      = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // ── localStorage 読み込み（初回マウント時） ──
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+      if (!s) return;
+      if (s.year)         setYear(s.year);
+      if (s.half)         setHalf(s.half);
+      if (s.overtimeRate !== undefined) setOvertimeRate(s.overtimeRate);
+      if (s.goalProfit  !== undefined) setGoalProfit(s.goalProfit);
+      if (s.data)         setData(s.data);
+      if (s.savedAt)      setSavedAt(s.savedAt);
+    } catch {}
+  }, []);
+
+  // ── localStorage 自動保存 ──
+  useEffect(() => {
+    const at = new Date().toLocaleString('ja-JP');
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ year, half, overtimeRate, goalProfit, data, savedAt: at }));
+      setSavedAt(at);
+    } catch {}
+  }, [year, half, overtimeRate, goalProfit, data]);
 
   const months = useMemo(() =>
     half === '1' ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12], [half]);
@@ -365,15 +391,20 @@ export default function GrossProfitCalculator() {
                        focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
           <span className="text-sm text-gray-400">円 / h</span>
         </div>
-        <div className="text-xs text-gray-400">
-          ※ 時間入力は <code className="bg-gray-100 px-1 rounded">166:30</code> 形式（時間:分）または小数で入力できます
-        </div>
+        {savedAt && (
+          <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400">
+            <span>💾</span><span>最終保存: {savedAt}</span>
+          </div>
+        )}
       </div>
 
       {/* ── メインテーブル ── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden">
-        <div className="px-6 pt-5 pb-3">
+        <div className="px-6 pt-5 pb-3 flex items-center gap-4 flex-wrap">
           <SectionTitle>月別入力</SectionTitle>
+          <p className="text-xs text-gray-400 mb-4">
+            ※ 時間入力は <code className="bg-gray-100 px-1 rounded">166:30</code> 形式（時間:分）または小数で入力できます
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1070px' }}>
