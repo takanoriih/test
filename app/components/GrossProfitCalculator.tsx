@@ -35,8 +35,8 @@ function BarChart({ months, profits, goalProfit }: {
   profits: (number | null)[];
   goalProfit: number;
 }) {
-  const W = 600, H = 160;
-  const ml = 40, mr = 38, mt = 18, mb = 24;
+  const W = 600, H = 200;
+  const ml = 40, mr = 38, mt = 20, mb = 26;
   const iW = W - ml - mr, iH = H - mt - mb;
   const n = months.length;
   const yMax = 120;
@@ -416,7 +416,7 @@ export default function GrossProfitCalculator() {
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col">
           <SectionTitle>月次粗利 目標対比</SectionTitle>
-          <div className="h-[160px]">
+          <div className="h-[200px]">
             <BarChart months={months} profits={profits} goalProfit={gp} />
           </div>
         </div>
