@@ -208,7 +208,7 @@ export default function GrossProfitCalculator() {
   }, [overtimeRate, goalProfit, data]);
 
   const months = useMemo(() =>
-    half === '1' ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12], [half]);
+    half === '1' ? [4, 5, 6, 7, 8, 9] : [10, 11, 12, 1, 2, 3], [half]);
 
   const calc = useMemo(() => {
     const rate = pf(overtimeRate);
@@ -331,8 +331,8 @@ export default function GrossProfitCalculator() {
             <select value={half} onChange={e => setHalf(e.target.value as '1' | '2')}
               className="h-9 border border-gray-200 rounded-lg px-3 text-sm text-gray-700
                          bg-white outline-none focus:border-blue-400 cursor-pointer">
-              <option value="1">上期（1〜6月）</option>
-              <option value="2">下期（7〜12月）</option>
+              <option value="1">上期（4〜9月）</option>
+              <option value="2">下期（10〜3月）</option>
             </select>
           </div>
         </div>
