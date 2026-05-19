@@ -369,7 +369,7 @@ export default function GrossProfitCalculator() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1070px' }}>
             <colgroup>
-              {[46, 112, 92, 78, 76, 76, 76, 76, 66, 72, 98, 96, 84, 84]
+              {[44, 106, 84, 78, 72, 72, 72, 72, 62, 68, 88, 86, 76, 80, 70]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
@@ -432,7 +432,7 @@ export default function GrossProfitCalculator() {
                     </td>
                     {/* 売上高（派遣=自動計算, 請負=入力値） */}
                     <td className={`${bTd} font-semibold text-blue-700 whitespace-nowrap`}>
-                      {r.rev > 0 ? fmt(r.rev) : '—'}
+                      {r.rev > 0 ? fmt(r.rev) + ' 円' : '—'}
                     </td>
                     {/* 時間列 */}
                     <td className={bTd}>
@@ -451,7 +451,7 @@ export default function GrossProfitCalculator() {
                       {r.otT > 0 ? fmt(r.otT, 2) + ' h' : '—'}
                     </td>
                     <td className={`${bTd} font-semibold text-rose-600 whitespace-nowrap`}>
-                      {r.otP > 0 ? fmt(r.otP) : '—'}
+                      {r.otP > 0 ? fmt(r.otP) + ' 円' : '—'}
                     </td>
                     <td className={bTd}>
                       <MoneyInput value={d.labor ?? ''} onChange={v => update(r.m, 'labor', v)} />
@@ -460,10 +460,10 @@ export default function GrossProfitCalculator() {
                       <MoneyInput value={d.ins ?? ''} onChange={v => update(r.m, 'ins', v)} />
                     </td>
                     <td className={`${bTd} font-semibold text-rose-600 whitespace-nowrap`}>
-                      {r.cost > 0 ? fmt(r.cost) : '—'}
+                      {r.cost > 0 ? fmt(r.cost) + ' 円' : '—'}
                     </td>
                     <td className={`${bTd} font-semibold whitespace-nowrap ${r.prof >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {(r.rev > 0 || r.cost > 0) ? fmt(r.prof) : '—'}
+                      {(r.rev > 0 || r.cost > 0) ? fmt(r.prof) + ' 円' : '—'}
                     </td>
                     <td className={`${bTd} font-bold text-base ${r.rPct !== null ? 'text-emerald-600' : 'text-gray-400'}`}>
                       {r.rPct !== null ? r.rPct.toFixed(1) + '%' : '—'}
