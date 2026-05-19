@@ -305,14 +305,14 @@ export default function GrossProfitCalculator() {
   const halfLabel = half === '1' ? '上期（4〜9月）' : '下期（10〜3月）';
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-6">
+    <div className="max-w-[1400px] mx-auto px-6 py-6 print:px-2 print:py-1">
 
       {/* 印刷用スタイル */}
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 10mm; }
+          @page { size: A4 landscape; margin: 5mm; }
+          html { zoom: 72%; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .max-w-\\[1400px\\] { max-width: 100% !important; padding: 0 !important; }
         }
       `}</style>
 
@@ -423,7 +423,7 @@ export default function GrossProfitCalculator() {
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
           <SectionTitle>月次粗利 目標対比</SectionTitle>
-          <div className="relative flex-1 min-h-[180px]">
+          <div className="relative flex-1 min-h-[180px] print:min-h-0 print:h-[140px]">
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           </div>
         </div>
