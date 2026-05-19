@@ -416,7 +416,7 @@ export default function GrossProfitCalculator() {
         {/* グラフ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col">
           <SectionTitle>月次粗利 目標対比</SectionTitle>
-          <div className="flex-1 min-h-[180px]">
+          <div className="h-[200px]">
             <BarChart months={months} profits={profits} goalProfit={gp} />
           </div>
         </div>
