@@ -311,13 +311,14 @@ export default function GrossProfitCalculator() {
       </div>
 
       {/* ── ヘッダー ── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5
-                      flex items-center gap-4 flex-wrap print:hidden">
-        <div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-4 mb-5 print:hidden">
+        {/* 1行目：タイトル */}
+        <div className="mb-3">
           <h1 className="text-xl font-bold text-gray-800">半期粗利計算ツール</h1>
           <p className="text-sm text-gray-400 mt-0.5">売上・コスト・残業を一括管理</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap ml-2">
+        {/* 2行目：年度・半期・ボタン */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-500">年度</label>
             <input type="number" value={year} onKeyDown={blockInvalid}
@@ -340,23 +341,23 @@ export default function GrossProfitCalculator() {
               <option value="2">下期（10〜3月）</option>
             </select>
           </div>
-        </div>
-        <div className="ml-auto flex gap-3 print:hidden">
-          <button onClick={() => setData({})}
-            className="h-9 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-500
-                       hover:bg-gray-50 transition-colors">
-            クリア
-          </button>
-          <button onClick={downloadCSV}
-            className="h-9 px-5 rounded-lg bg-blue-600 text-white text-sm font-semibold
-                       hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
-            ↓ CSVダウンロード
-          </button>
-          <button onClick={() => window.print()}
-            className="h-9 px-5 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-600
-                       hover:bg-gray-50 transition-colors">
-            🖨 印刷 / PDF
-          </button>
+          <div className="flex gap-2 ml-auto flex-wrap">
+            <button onClick={() => setData({})}
+              className="h-9 px-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-500
+                         hover:bg-gray-50 transition-colors whitespace-nowrap">
+              クリア
+            </button>
+            <button onClick={downloadCSV}
+              className="h-9 px-3 rounded-lg bg-blue-600 text-white text-sm font-semibold
+                         hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 whitespace-nowrap">
+              ↓ CSV
+            </button>
+            <button onClick={() => window.print()}
+              className="h-9 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-600
+                         hover:bg-gray-50 transition-colors whitespace-nowrap">
+              🖨 印刷
+            </button>
+          </div>
         </div>
       </div>
 
