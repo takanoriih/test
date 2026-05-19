@@ -196,7 +196,9 @@ export default function GrossProfitCalculator() {
       return { m, ctype, rev, ext, ot, hol, night, otT, otP, labor, ins, cost, prof, rPct };
     });
     const tRate = sRev !== 0 ? sPf / sRev * 100 : null;
-    return { rows, sRev, sExt, sOt, sHol, sNight, sOtT, sOtP, sLab, sIns, sCost, sPf, tRate, any };
+    const extN = rows.filter(r => r.ext > 0).length;
+    const avgExt = extN > 0 ? sExt / extN : 0;
+    return { rows, sRev, sExt, avgExt, sOt, sHol, sNight, sOtT, sOtP, sLab, sIns, sCost, sPf, tRate, any };
   }, [data, overtimeRate, months]);
 
   const gp = pf(goalProfit);
@@ -246,7 +248,7 @@ export default function GrossProfitCalculator() {
     a.click(); URL.revokeObjectURL(a.href);
   };
 
-  const { rows, sRev, sExt, sOt, sHol, sNight, sOtT, sOtP, sLab, sIns, sCost, sPf, tRate, any } = calc;
+  const { rows, sRev, sExt, avgExt, sOt, sHol, sNight, sOtT, sOtP, sLab, sIns, sCost, sPf, tRate, any } = calc;
 
   const gTh = 'text-white text-xs font-bold tracking-wide uppercase py-2.5 text-center';
   const cTh = 'text-xs font-semibold text-right py-2.5 px-2 border-b-2 border-gray-200 whitespace-nowrap';
@@ -367,7 +369,7 @@ export default function GrossProfitCalculator() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1200px' }}>
             <colgroup>
-              {[50, 95, 105, 85, 80, 75, 75, 90, 95, 110, 120, 95, 100, 82]
+              {[50, 112, 105, 85, 80, 75, 75, 90, 95, 110, 120, 95, 100, 82]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
@@ -413,8 +415,9 @@ export default function GrossProfitCalculator() {
                       <select
                         value={d.ctype}
                         onChange={e => update(r.m, 'ctype', e.target.value)}
-                        className="w-full h-9 border border-gray-200 rounded-lg px-1 text-xs
-                                   bg-white outline-none focus:border-blue-400 cursor-pointer">
+                        className="w-full h-9 border border-gray-200 rounded-lg px-1 text-xs leading-tight
+                                   bg-white outline-none focus:border-blue-400 cursor-pointer
+                                   overflow-hidden text-ellipsis">
                         <option value="haken">派遣</option>
                         <option value="ukeoi">請負・準委任</option>
                       </select>
@@ -475,7 +478,9 @@ export default function GrossProfitCalculator() {
                                text-gray-700 border-r-2 border-r-emerald-200 align-middle">合計</td>
                 <td className={fTd}>—</td>
                 <td className={fTd}>{any ? fmt(sRev) + ' 円' : '—'}</td>
-                <td className={fTd}>{any ? fmt(sExt, 2) + ' h' : '—'}</td>
+                <td className={fTd}>
+                  {any ? <><span className="text-xs font-normal text-gray-400">平均 </span>{fmt(avgExt, 2) + ' h'}</> : '—'}
+                </td>
                 <td className={fTd}>{any ? fmt(sOt, 2) + ' h' : '—'}</td>
                 <td className={fTd}>{any ? fmt(sHol, 2) + ' h' : '—'}</td>
                 <td className={fTd}>{any ? fmt(sNight, 2) + ' h' : '—'}</td>
