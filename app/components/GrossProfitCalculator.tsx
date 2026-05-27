@@ -138,12 +138,21 @@ function drawChart(
   });
 }
 
-// ── 時間入力（HH:MM 形式） ────────────────────────────────
+// ── 時間入力（HH:MM 形式 → blur で小数に変換） ────────────
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <input
-      type="text" value={value} placeholder="0:00"
-      onChange={e => onChange(e.target.value.replace(/[^0-9:]/g, ''))}
+      type="text" value={value} placeholder="0:00 / 0.0"
+      onChange={e => onChange(e.target.value.replace(/[^0-9:.]/g, ''))}
+      onBlur={() => {
+        // "160:15" のような HH:MM 形式が入っていたら小数に変換（160.25）
+        if (value.includes(':')) {
+          const n = parseTime(value);
+          // 小数2桁まで表示し、末尾の0は削る（160.25 はそのまま、160.00 → 160）
+          const s = n.toFixed(2).replace(/\.?0+$/, '');
+          onChange(s);
+        }
+      }}
       className="w-full h-9 border border-gray-200 rounded-lg px-1 text-right text-xs
                  bg-white outline-none transition
                  focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -619,7 +628,7 @@ export default function GrossProfitCalculator() {
         <div className="px-6 pt-5 pb-3 flex items-center gap-4 flex-wrap">
           <SectionTitle>月別入力</SectionTitle>
           <p className="text-xs text-gray-400 mb-4">
-            ※ 時間入力は <code className="bg-gray-100 px-1 rounded">hhh:mm</code> 形式（時間:分）または小数で入力できます
+            ※ <code className="bg-gray-100 px-1 rounded">160:15</code> のように入力するとフォーカスを外したときに <code className="bg-gray-100 px-1 rounded">160.25</code> に自動変換されます（小数で直接入力も可）
           </p>
         </div>
         <div className="overflow-x-auto">
