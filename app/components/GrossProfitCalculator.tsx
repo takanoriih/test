@@ -188,12 +188,21 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 // ── メインコンポーネント ──────────────────────────────────
 const GP_PREFIX = 'gp';
 
+type WakuDefaults = {
+  revenue: string; wakuMin: string; wakuMax: string;
+  wakuOver: string; wakuDeduct: string;
+};
+const emptyWakuDefaults = (): WakuDefaults => ({
+  revenue: '', wakuMin: '', wakuMax: '', wakuOver: '', wakuDeduct: '',
+});
+
 export default function GrossProfitCalculator() {
   const [year,         setYear]         = useState('2026');
   const [half,         setHalf]         = useState<'1' | '2'>('1');
   const [overtimeRate, setOvertimeRate] = useState('');
   const [goalProfit,   setGoalProfit]   = useState('');
   const [data,         setData]         = useState<Record<number, MD>>({});
+  const [wakuDefaults, setWakuDefaults] = useState<WakuDefaults>(emptyWakuDefaults());
   const [savedAt,      setSavedAt]      = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -217,6 +226,7 @@ export default function GrossProfitCalculator() {
       const migrated: Record<number, MD> = {};
       Object.entries(rawData).forEach(([k, v]) => { migrated[Number(k)] = migrateMD(v); });
       setData(migrated);
+      setWakuDefaults({ ...emptyWakuDefaults(), ...(s?.wakuDefaults ?? {}) });
       setSavedAt(s?.savedAt ?? null);
     } catch { skipSaveRef.current = false; }
   }, [year, half]);
@@ -227,10 +237,10 @@ export default function GrossProfitCalculator() {
     const at = new Date().toLocaleString('ja-JP');
     const key = `${GP_PREFIX}-${yearRef.current}-${halfRef.current}`;
     try {
-      localStorage.setItem(key, JSON.stringify({ overtimeRate, goalProfit, data, savedAt: at }));
+      localStorage.setItem(key, JSON.stringify({ overtimeRate, goalProfit, data, wakuDefaults, savedAt: at }));
       setSavedAt(at);
     } catch {}
-  }, [overtimeRate, goalProfit, data]);
+  }, [overtimeRate, goalProfit, data, wakuDefaults]);
 
   const months = useMemo(() =>
     half === '1' ? [4, 5, 6, 7, 8, 9] : [10, 11, 12, 1, 2, 3], [half]);
@@ -305,6 +315,38 @@ export default function GrossProfitCalculator() {
   const update = useCallback((m: number, col: string, val: string) => {
     setData(prev => ({ ...prev, [m]: { ...(prev[m] ?? emptyMD()), [col]: val } }));
   }, []);
+
+  const updateWakuDefault = useCallback((col: keyof WakuDefaults, val: string) => {
+    setWakuDefaults(prev => ({ ...prev, [col]: val }));
+  }, []);
+
+  // 半期6ヶ月すべてを「枠」契約に切り替え、枠デフォルト値で上書き
+  const applyWakuDefaultsToAll = () => {
+    const hasAny = Object.values(wakuDefaults).some(v => v !== '');
+    if (!hasAny) {
+      alert('先に枠デフォルトの値を入力してください。');
+      return;
+    }
+    if (!confirm(
+      `半期6ヶ月（${months.join('・')}月）すべてを「枠」契約に変更し、月単価・下限h・上限h・超過/控除をデフォルト値で上書きします。\n（時間・人件費・社会保険等の入力は残ります）\nよろしいですか？`
+    )) return;
+    setData(prev => {
+      const next = { ...prev };
+      months.forEach(m => {
+        const cur = prev[m] ?? emptyMD();
+        next[m] = {
+          ...cur,
+          ctype: 'waku',
+          revenue:    wakuDefaults.revenue,
+          wakuMin:    wakuDefaults.wakuMin,
+          wakuMax:    wakuDefaults.wakuMax,
+          wakuOver:   wakuDefaults.wakuOver,
+          wakuDeduct: wakuDefaults.wakuDeduct,
+        };
+      });
+      return next;
+    });
+  };
 
   const downloadCSV = () => {
     const halfLabel = half === '1' ? '上期' : '下期';
@@ -486,21 +528,90 @@ export default function GrossProfitCalculator() {
       </div>
 
       {/* ── 設定バー ── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5
-                      flex items-center gap-6 flex-wrap no-print">
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-600 whitespace-nowrap">時間外手当単価</label>
-          <MoneyInput value={overtimeRate} onChange={setOvertimeRate} placeholder="例：2,500"
-            className="w-36 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
-                       text-gray-700 bg-white outline-none
-                       focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
-          <span className="text-sm text-gray-400 whitespace-nowrap">円 / h</span>
-        </div>
-        {savedAt && (
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400">
-            <span>💾</span><span>最終保存: {savedAt}</span>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-4 mb-5 no-print">
+        {/* 1段目：時間外手当単価＋保存時刻 */}
+        <div className="flex items-center gap-6 flex-wrap">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-600 whitespace-nowrap">時間外手当単価</label>
+            <MoneyInput value={overtimeRate} onChange={setOvertimeRate} placeholder="例：2,500"
+              className="w-36 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
+                         text-gray-700 bg-white outline-none
+                         focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            <span className="text-sm text-gray-400 whitespace-nowrap">円 / h</span>
           </div>
-        )}
+          {savedAt && (
+            <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400">
+              <span>💾</span><span>最終保存: {savedAt}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 2段目：枠デフォルト */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-baseline gap-3 mb-2 flex-wrap">
+            <span className="text-sm font-medium text-gray-600">枠デフォルト</span>
+            <span className="text-xs text-gray-400">
+              「枠」契約の標準値。下のボタンで半期6ヶ月にまとめて反映できます（個別月の上書きは可）
+            </span>
+          </div>
+          <div className="flex items-end gap-3 flex-wrap">
+            <div>
+              <div className="text-[11px] text-gray-500 mb-1">月単価</div>
+              <MoneyInput
+                value={wakuDefaults.revenue}
+                onChange={v => updateWakuDefault('revenue', v)}
+                placeholder="例：600,000"
+                className="w-32 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
+                           text-gray-700 bg-white outline-none
+                           focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500 mb-1">下限h</div>
+              <input
+                type="text" inputMode="decimal"
+                value={wakuDefaults.wakuMin} placeholder="140"
+                onChange={e => updateWakuDefault('wakuMin', e.target.value.replace(/[^0-9.]/g, ''))}
+                className="w-20 h-9 border border-gray-200 rounded-lg px-2 text-sm text-right
+                           text-gray-700 bg-white outline-none
+                           focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500 mb-1">上限h</div>
+              <input
+                type="text" inputMode="decimal"
+                value={wakuDefaults.wakuMax} placeholder="160"
+                onChange={e => updateWakuDefault('wakuMax', e.target.value.replace(/[^0-9.]/g, ''))}
+                className="w-20 h-9 border border-gray-200 rounded-lg px-2 text-sm text-right
+                           text-gray-700 bg-white outline-none
+                           focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500 mb-1">超過 円/h</div>
+              <MoneyInput
+                value={wakuDefaults.wakuOver}
+                onChange={v => updateWakuDefault('wakuOver', v)}
+                placeholder="例：3,500"
+                className="w-28 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
+                           text-gray-700 bg-white outline-none
+                           focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500 mb-1">控除 円/h</div>
+              <MoneyInput
+                value={wakuDefaults.wakuDeduct}
+                onChange={v => updateWakuDefault('wakuDeduct', v)}
+                placeholder="例：3,000"
+                className="w-28 h-9 border border-gray-200 rounded-lg px-3 text-sm text-right
+                           text-gray-700 bg-white outline-none
+                           focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition" />
+            </div>
+            <button onClick={applyWakuDefaultsToAll}
+              className="h-9 px-4 rounded-lg bg-purple-600 text-white text-sm font-semibold
+                         hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200 whitespace-nowrap">
+              全月に反映
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ── メインテーブル ── */}
