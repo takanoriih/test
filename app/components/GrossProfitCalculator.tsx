@@ -3,13 +3,47 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 
 // ── 型 ───────────────────────────────────────────────────
-type ContractType = 'haken' | 'ukeoi';
-type ColKey = 'revenue' | 'unitRate' | 'ext' | 'ot' | 'hol' | 'night' | 'labor' | 'ins';
+// tanka:  時給 × 社外時間 で売上算出
+// waku:   月単価 + 上限超過分 × 超過単価 − 下限未達分 × 控除単価
+// kotei:  月単価をそのまま売上に
+type ContractType = 'tanka' | 'waku' | 'kotei';
+type ColKey =
+  | 'revenue'     // 月単価（waku / kotei）
+  | 'unitRate'    // 時給（tanka）
+  | 'wakuMin'     // 枠下限（h）
+  | 'wakuMax'     // 枠上限（h）
+  | 'wakuOver'    // 超過単価（円/h）
+  | 'wakuDeduct'  // 控除単価（円/h）
+  | 'ext' | 'ot' | 'hol' | 'night' | 'labor' | 'ins';
 type MD = Record<ColKey, string> & { ctype: ContractType };
 
 const emptyMD = (): MD => ({
-  ctype: 'ukeoi', revenue: '', unitRate: '', ext: '', ot: '', hol: '', night: '', labor: '', ins: '',
+  ctype: 'kotei',
+  revenue: '', unitRate: '',
+  wakuMin: '', wakuMax: '', wakuOver: '', wakuDeduct: '',
+  ext: '', ot: '', hol: '', night: '', labor: '', ins: '',
 });
+
+// 旧データ（haken/ukeoi）を新形式に変換
+function migrateMD(raw: unknown): MD {
+  const result = emptyMD();
+  if (!raw || typeof raw !== 'object') return result;
+  const r = raw as Record<string, unknown>;
+  // 文字列フィールドのみ引き継ぐ
+  (Object.keys(result) as (keyof MD)[]).forEach(k => {
+    if (k === 'ctype') return;
+    const v = r[k];
+    if (typeof v === 'string') {
+      (result as unknown as Record<string, string>)[k] = v;
+    }
+  });
+  // ctype マイグレーション
+  const c = r.ctype;
+  if (c === 'haken' || c === 'tanka')        result.ctype = 'tanka';
+  else if (c === 'waku')                     result.ctype = 'waku';
+  else if (c === 'ukeoi' || c === 'kotei')   result.ctype = 'kotei';
+  return result;
+}
 
 const pf = (s?: string) => parseFloat(s ?? '') || 0;
 const fmt = (n: number, d = 0) => n.toLocaleString('ja-JP', { maximumFractionDigits: d });
@@ -178,7 +212,11 @@ export default function GrossProfitCalculator() {
       const s = JSON.parse(localStorage.getItem(key) ?? 'null');
       setOvertimeRate(s?.overtimeRate ?? '');
       setGoalProfit(s?.goalProfit ?? '');
-      setData(s?.data ?? {});
+      // 旧データ（haken/ukeoi）の型を新形式に揃える
+      const rawData = (s?.data ?? {}) as Record<string, unknown>;
+      const migrated: Record<number, MD> = {};
+      Object.entries(rawData).forEach(([k, v]) => { migrated[Number(k)] = migrateMD(v); });
+      setData(migrated);
       setSavedAt(s?.savedAt ?? null);
     } catch { skipSaveRef.current = false; }
   }, [year, half]);
@@ -210,10 +248,25 @@ export default function GrossProfitCalculator() {
       const hol   = parseTime(d.hol);
       const night = parseTime(d.night);
 
-      // 売上高：派遣=時間単価×社外時間、請負=月契約単価
-      const rev = ctype === 'haken'
-        ? Math.round(pf(d.unitRate) * ext)
-        : pf(d.revenue);
+      // 売上高
+      //  単価(tanka): 時給 × 社外時間
+      //  固定(kotei): 月単価
+      //  枠(waku):    月単価 + max(社外h−上限h,0)×超過単価 − max(下限h−社外h,0)×控除単価
+      let rev = 0;
+      if (ctype === 'tanka') {
+        rev = Math.round(pf(d.unitRate) * ext);
+      } else if (ctype === 'kotei') {
+        rev = pf(d.revenue);
+      } else { // waku
+        const base    = pf(d.revenue);
+        const wMin    = pf(d.wakuMin);
+        const wMax    = pf(d.wakuMax);
+        const wOver   = pf(d.wakuOver);
+        const wDeduct = pf(d.wakuDeduct);
+        const overH   = wMax > 0 && ext > wMax ? ext - wMax : 0;
+        const shortH  = wMin > 0 && ext > 0 && ext < wMin ? wMin - ext : 0;
+        rev = Math.round(base + overH * wOver - shortH * wDeduct);
+      }
 
       const otT   = ot + hol + night;
       const otP   = Math.round(otT * rate);
@@ -263,9 +316,11 @@ export default function GrossProfitCalculator() {
       ['月','契約種別','売上高','社外合計(h)','定時外(h)','休日(h)','深夜(h)',
        '残業時間計(h)','残業額','人件費','社会保険等','コスト計','粗利額','粗利率(%)'],
     ];
+    const ctypeLabel = (c: ContractType) =>
+      c === 'tanka' ? '単価' : c === 'waku' ? '枠' : '固定';
     rows.forEach(r => csvRows.push([
       `${r.m}月`,
-      r.ctype === 'haken' ? '派遣' : '請負・準委任',
+      ctypeLabel(r.ctype),
       r.rev, r.ext.toFixed(2), r.ot.toFixed(2), r.hol.toFixed(2), r.night.toFixed(2),
       r.otT.toFixed(2), r.otP, r.labor, r.ins, r.cost, r.prof,
       r.rPct !== null ? r.rPct.toFixed(1) : '',
@@ -457,9 +512,9 @@ export default function GrossProfitCalculator() {
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1070px' }}>
+          <table className="w-full border-collapse" style={{ tableLayout: 'fixed', minWidth: '1130px' }}>
             <colgroup>
-              {[44, 106, 84, 78, 72, 72, 72, 72, 62, 68, 88, 86, 76, 80, 70]
+              {[44, 106, 130, 84, 72, 72, 72, 72, 62, 68, 88, 86, 76, 80, 70]
                 .map((w, i) => <col key={i} style={{ width: w + 'px' }} />)}
             </colgroup>
             <thead>
@@ -472,7 +527,7 @@ export default function GrossProfitCalculator() {
                 <th colSpan={2} className={`${gTh} bg-emerald-600`}>粗利</th>
               </tr>
               <tr>
-                <th className={`${cTh} bg-blue-50 text-blue-700`}>単価 / 月額</th>
+                <th className={`${cTh} bg-blue-50 text-blue-700`}>単価 / 月単価</th>
                 <th className={`${cTh} bg-blue-50 text-blue-700`}>売上高</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>社外合計</th>
                 <th className={`${cTh} bg-amber-50 text-amber-700`}>定時外</th>
@@ -490,7 +545,6 @@ export default function GrossProfitCalculator() {
             <tbody>
               {rows.map((r, idx) => {
                 const d = data[r.m] ?? emptyMD();
-                const isHaken = d.ctype === 'haken';
                 return (
                   <tr key={r.m}
                     className={`transition-colors ${
@@ -508,16 +562,51 @@ export default function GrossProfitCalculator() {
                         className="w-full h-9 border border-gray-200 rounded-lg px-1 text-xs leading-tight
                                    bg-white outline-none focus:border-blue-400 cursor-pointer
                                    overflow-hidden text-ellipsis">
-                        <option value="haken">派遣</option>
-                        <option value="ukeoi">請負・準委任</option>
+                        <option value="tanka">単価</option>
+                        <option value="waku">枠</option>
+                        <option value="kotei">固定</option>
                       </select>
                     </td>
-                    {/* 単価 / 月額 入力 */}
+                    {/* 単価 / 月額 入力（契約種別で内容が変わる） */}
                     <td className={bTd}>
-                      {isHaken ? (
-                        <MoneyInput value={d.unitRate ?? ''} onChange={v => update(r.m, 'unitRate', v)} placeholder="時間単価" />
-                      ) : (
-                        <MoneyInput value={d.revenue ?? ''} onChange={v => update(r.m, 'revenue', v)} placeholder="月契約額" />
+                      {d.ctype === 'tanka' && (
+                        <MoneyInput value={d.unitRate ?? ''} onChange={v => update(r.m, 'unitRate', v)} placeholder="時給 円/h" />
+                      )}
+                      {d.ctype === 'kotei' && (
+                        <MoneyInput value={d.revenue ?? ''} onChange={v => update(r.m, 'revenue', v)} placeholder="月単価" />
+                      )}
+                      {d.ctype === 'waku' && (
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            <div className="text-[10px] text-gray-400 leading-tight mb-0.5">月単価</div>
+                            <MoneyInput value={d.revenue ?? ''} onChange={v => update(r.m, 'revenue', v)} placeholder="月単価" />
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-gray-400 leading-tight mb-0.5">下限h 〜 上限h</div>
+                            <div className="flex gap-1">
+                              <input
+                                type="text" inputMode="decimal"
+                                value={d.wakuMin ?? ''} placeholder="140"
+                                onChange={e => update(r.m, 'wakuMin', e.target.value.replace(/[^0-9.]/g, ''))}
+                                className="w-1/2 h-9 border border-gray-200 rounded-lg px-1 text-right text-xs
+                                           bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+                              <input
+                                type="text" inputMode="decimal"
+                                value={d.wakuMax ?? ''} placeholder="160"
+                                onChange={e => update(r.m, 'wakuMax', e.target.value.replace(/[^0-9.]/g, ''))}
+                                className="w-1/2 h-9 border border-gray-200 rounded-lg px-1 text-right text-xs
+                                           bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-gray-400 leading-tight mb-0.5">超過 円/h</div>
+                            <MoneyInput value={d.wakuOver ?? ''} onChange={v => update(r.m, 'wakuOver', v)} placeholder="超過単価" />
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-gray-400 leading-tight mb-0.5">控除 円/h</div>
+                            <MoneyInput value={d.wakuDeduct ?? ''} onChange={v => update(r.m, 'wakuDeduct', v)} placeholder="控除単価" />
+                          </div>
+                        </div>
                       )}
                     </td>
                     {/* 売上高（派遣=自動計算, 請負=入力値） */}
