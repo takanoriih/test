@@ -142,7 +142,7 @@ function drawChart(
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <input
-      type="text" value={value} placeholder="0:00 / 0.0"
+      type="text" value={value} placeholder="0.00"
       onChange={e => onChange(e.target.value.replace(/[^0-9:.]/g, ''))}
       onBlur={() => {
         // "160:15" のような HH:MM 形式が入っていたら小数に変換（160.25）
